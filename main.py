@@ -5,34 +5,35 @@ import time
 import speech_recognition as sr
 import pyttsx3
 import numpy as np
-# from os.path import join, dirname
+from os.path import join, dirname
 # import matplotlib.pyplot as plt
 # ^ matplotlib is great for visualising data and for testing purposes but usually not needed for production
 
 load_dotenv()
-openai.api_key = os.getenv('OPENAI_API_KEY')
+openai.api_key = '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'
 model = 'gpt-3.5-turbo'
 # Set up the speech recognition and text-to-speech engines
 r = sr.Recognizer()
 engine = pyttsx3.init()
-voice = engine.getProperty('voices')[1]
+voice = engine.getProperty('voices')[0]
 engine.setProperty('voice', voice.id)
-name = "YOUR NAME HERE"
-greetings = [f"whats up master {name}", 
-             "yeah?", 
-             "Well, hello there, Master of Puns and Jokes - how's it going today?",
-             f"Ahoy there, Captain {name}! How's the ship sailing?",
-             f"Bonjour, Monsieur {name}! Comment ça va? Wait, why the hell am I speaking French?" ]
+name = "Olivier"
+greetings = [f"Salut {name}", 
+             "oui?", 
+             "Très bien ton audio fonctionne",
+             f"Rejoins-nous par-là {name}!",
+             f"Bonjour, Monsieur {name}! Comment ça va?" ]
 
 # Listen for the wake word "hey pos"
 def listen_for_wake_word(source):
-    print("Listening for 'Hey POS'...")
+    print("Listening for 'bonjour'...")
 
     while True:
+        r.adjust_for_ambient_noise(source)
         audio = r.listen(source)
         try:
-            text = r.recognize_google(audio)
-            if "hey pos" in text.lower():
+            text = r.recognize_google(audio, language="fr-FR")
+            if 'bonjour' in text.lower():
                 print("Wake word detected.")
                 engine.say(np.random.choice(greetings))
                 engine.runAndWait()
@@ -48,18 +49,18 @@ def listen_and_respond(source):
     while True:
         audio = r.listen(source)
         try:
-            text = r.recognize_google(audio)
+            text = r.recognize_google(audio, language="fr-FR")
             print(f"You said: {text}")
             if not text:
                 continue
 
             # Send input to OpenAI API
-            response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": f"{text}"}]) 
+            response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[{"role": "user", "content": 'Réponds en français' f"{text}"}]) 
             response_text = response.choices[0].message.content
             print(f"OpenAI response: {response_text}")
 
             # Speak the response
-            engine.say(response_text)
+            engine.say(response_text)            
             engine.runAndWait()
 
             if not audio:
